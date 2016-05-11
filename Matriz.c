@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
             printf("Local Matrix:\n");
             for (int ii=0; ii<Ny_sub; ii++) {
                 for (int jj=0; jj<Nx_sub; jj++) {
-                    printf("%3d ",(int)b[ii*Nx_sub+jj]);
+                    printf("%3d ",(int)sub_M[ii*Nx_sub+jj]);
                 }
                 printf("\n");
             }
