@@ -87,26 +87,51 @@ int main(int argc, char *argv[]) {
     MPI_Datatype blocktype;
     MPI_Datatype blocktype2;
 
-    MPI_Type_vector(Nx_sub, Ny_sub, N, MPI_CHAR, &blocktype2);
+    MPI_Type_vector(Ny_sub, Nx_sub, N, MPI_CHAR, &blocktype2);
     MPI_Type_create_resized( blocktype2, 0, sizeof(char), &blocktype);
     MPI_Type_commit(&blocktype);
 
-    int disps[NPROWS*NPCOLS];
-    int counts[NPROWS*NPCOLS];
-    for (int ii=0; ii<NPROWS; ii++) {
-        for (int jj=0; jj<NPCOLS; jj++) {
-            disps[ii*NPCOLS+jj] = ii*N*Nx_sub+jj*Ny_sub;
-            counts [ii*NPCOLS+jj] = 1;
+    int disps[dim[0]*dim[1]];
+    int counts[dim[0]*dim[1]];
+    for (int ii=0; ii<dim[0]; ii++) {
+        for (int jj=0; jj<dim[1]; jj++) {
+            disps[ii*dim[1]+jj] = ii*N*Ny_sub+jj*Nx_sub;
+            counts [ii*dim[1]+jj] = 1;
         }
     }
- MPI_Scatterv(M, counts, disps, blocktype, sub_M, Nx_sub*Ny_sub, MPI_CHAR, 0, MPI_COMM_WORLD);
+ MPI_Scatterv(M, counts, disps, blocktype, sub_M, Ny_sub*Nx_sub, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 // Envia a parcela da diagonal
     if ((sub_diag = malloc(Ny_sub * sizeof(int))) == NULL) { exit(1); }
 // TODO
 
+    for (int proc=0; proc<procs; proc++) {
+        if (proc == myId) {
+            printf("Rank = %d\n", myId);
+            if (rank == 0) {
+                printf("Global matrix: \n");
+                for (int ii=0; ii<N; ii++) {
+                    for (int jj=0; jj<N; jj++) {
+                        printf("%3d ",(int)M[ii*N+jj]);
+                    }
+                    printf("\n");
+                }
+            }
+            printf("Local Matrix:\n");
+            for (int ii=0; ii<Ny_sub; ii++) {
+                for (int jj=0; jj<Nx_sub; jj++) {
+                    printf("%3d ",(int)b[ii*Nx_sub+jj]);
+                }
+                printf("\n");
+            }
+            printf("\n");
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+
+
 // Multiplica cada elemento de cada linha pelo elemento da diagonal da linha correspondente
-  	for (j = 0; j < Ny_sub; ++j) {
+/*  	for (j = 0; j < Ny_sub; ++j) {
   		sub_diag[j];
   		for (i = 0; i < Nx_sub; ++i) {
   			sub_M[i][j] *= aux;
@@ -129,7 +154,7 @@ int main(int argc, char *argv[]) {
   		}
 
   		printf("Resultado: %d\n", soma);
-  	}
+  	}*/
 
 
 	MPI_Finalize();
