@@ -86,18 +86,18 @@ int main(int argc, char *argv[]) {
 // TODO
 
 // Multiplica cada elemento de cada linha pelo elemento da diagonal da linha correspondente
-  	for (j = 0; j < tamDims; ++j) {
+  	for (j = 0; j < Ny_sub; ++j) {
   		aux = diag[Y_i + j];
-  		for (i = X_i; i <= X_f; ++i) {
+  		for (i = 0; i < Nx_sub; ++i) {
   			sub_M[i][j] *= aux;
   		}
   	}
 
 // Soma das colunas em cada processo
   	memset(soma_p, 0, sizeof(int)*N);
-  	for (i = X_i; i <= X_f; ++i) {
-  		for (j = Y_i; j <= Y_f; ++j) {
-  			soma_p[i] += M[i][j];
+  	for (i = 0; i < Nx_sub; ++i) {
+  		for (j = 0; j < Ny_sub; ++j) {
+  			soma_p[i] += sub_M[i][j];
   		}
   	}
 // Junta as somas parciais
