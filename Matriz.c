@@ -84,6 +84,23 @@ int main(int argc, char *argv[]) {
     if ((sub_M = malloc(Nx_sub * Ny_sub * sizeof(int))) == NULL) { exit(1); }
 // TODO
 
+    MPI_Datatype blocktype;
+    MPI_Datatype blocktype2;
+
+    MPI_Type_vector(Nx_sub, Ny_sub, N, MPI_CHAR, &blocktype2);
+    MPI_Type_create_resized( blocktype2, 0, sizeof(char), &blocktype);
+    MPI_Type_commit(&blocktype);
+
+    int disps[NPROWS*NPCOLS];
+    int counts[NPROWS*NPCOLS];
+    for (int ii=0; ii<NPROWS; ii++) {
+        for (int jj=0; jj<NPCOLS; jj++) {
+            disps[ii*NPCOLS+jj] = ii*N*Nx_sub+jj*Ny_sub;
+            counts [ii*NPCOLS+jj] = 1;
+        }
+    }
+ MPI_Scatterv(M, counts, disps, blocktype, sub_M, Nx_sub*Ny_sub, MPI_CHAR, 0, MPI_COMM_WORLD);
+
 // Envia a parcela da diagonal
     if ((sub_diag = malloc(Ny_sub * sizeof(int))) == NULL) { exit(1); }
 // TODO
