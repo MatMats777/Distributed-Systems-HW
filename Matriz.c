@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mpi.h>
+#include <mpi.h> 
 
 // Definir o tamanho da matriz aqui
 #define N 8
