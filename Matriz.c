@@ -82,7 +82,6 @@ int main(int argc, char *argv[]) {
 
 // Distribui os blocos da matriz
     if ((sub_M = malloc(Nx_sub * Ny_sub * sizeof(int))) == NULL) { exit(1); }
-// TODO
 
     MPI_Datatype blocktype;
     MPI_Datatype blocktype2;
@@ -103,7 +102,6 @@ int main(int argc, char *argv[]) {
 
 // Envia a parcela da diagonal
     if ((sub_diag = malloc(Ny_sub * sizeof(int))) == NULL) { exit(1); }
-// TODO
 
     for (int proc=0; proc<procs; proc++) {
         if (proc == myId) {
