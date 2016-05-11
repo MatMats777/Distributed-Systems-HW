@@ -19,6 +19,7 @@ int main(int argc, char *argv[]) {
  	int M[N][N];
  	int **sub_M;
  	int diag[N];
+  int *sub_diag;
  	int soma_p[N], soma_recv[N], soma;
 
  	int i, j, aux;
@@ -80,14 +81,16 @@ int main(int argc, char *argv[]) {
   	Y_f = Y_i + Ny_sub - 1;	
 
 // Distribui os blocos da matriz
+    if ((sub_M = malloc(Nx_sub * Ny_sub * sizeof(int))) == NULL) { exit(1); }
 // TODO
 
 // Envia a parcela da diagonal
+    if ((sub_diag = malloc(Ny_sub * sizeof(int))) == NULL) { exit(1); }
 // TODO
 
 // Multiplica cada elemento de cada linha pelo elemento da diagonal da linha correspondente
   	for (j = 0; j < Ny_sub; ++j) {
-  		aux = diag[Y_i + j];
+  		sub_diag[j];
   		for (i = 0; i < Nx_sub; ++i) {
   			sub_M[i][j] *= aux;
   		}
