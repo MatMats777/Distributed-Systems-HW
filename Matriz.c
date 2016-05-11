@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
   	memset(soma_p, 0, sizeof(int)*N);
   	for (i = 0; i < Nx_sub; ++i) {
   		for (j = 0; j < Ny_sub; ++j) {
-  			soma_p[i] += sub_M[i][j];
+  			soma_p[i + X_i] += sub_M[i][j];
   		}
   	}
 // Junta as somas parciais
