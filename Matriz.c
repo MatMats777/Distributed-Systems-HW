@@ -99,8 +99,8 @@ int main(int argc, char *argv[]) {
 
 // Definição de novos tipos para o envio da matriz
 	int sizes[2]    = {N, N};         
-	int subsizes[2] = {Nx_sub, Ny_sub};     
-	int starts[2]   = {X_i,Y_i};                        
+	int subsizes[2] = {Ny_sub, Nx_sub};     
+	int starts[2]   = {Y_i,X_i};                        
 	MPI_Datatype type, subarrtype;
 	MPI_Type_create_subarray(2, sizes, subsizes, starts, MPI_ORDER_C, MPI_INT, &type);
 	MPI_Type_create_resized(type, 0, Ny_sub*sizeof(int), &subarrtype);
