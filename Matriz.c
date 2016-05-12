@@ -139,29 +139,31 @@ int main(int argc, char *argv[]) {
     // Envia a parcela da diagonal
     if ((sub_diag = malloc(Ny_sub * sizeof(int))) == NULL) { exit(1); }
     
-    for (int proc=0; proc<procs; proc++) {
-        if (proc == myId) {
-            printf("Rank = %d\n", myId);
-            if (myId == 0) {
-                printf("Global matrix: \n");
-                for (int ii=0; ii<N; ii++) {
-                    for (int jj=0; jj<N; jj++) {
-                        printf("%3d ", M[ii][jj]);
-                    }
-                    printf("\n");
-                }
-            }
-            printf("Local Matrix:\n");
-            for (int ii=0; ii<Ny_sub; ii++) {
-                for (int jj=0; jj<Nx_sub; jj++) {
-                    printf("%3d ", sub_M[ii][jj]);
-                }
-                printf("\n");
+
+    printf("Rank = %d\n", myId);
+    if (myId == 0) {
+        printf("Global matrix: \n");
+        for (int ii=0; ii<N; ii++) {
+            for (int jj=0; jj<N; jj++) {
+                printf("%3d ", M[ii][jj]);
             }
             printf("\n");
         }
-        MPI_Barrier(MPI_COMM_WORLD);
     }
+    printf("Local Matrix:\n");
+    for (int ii=0; ii<Ny_sub; ii++) {
+        for (int jj=0; jj<Nx_sub; jj++) {
+            printf("%3d ", sub_M[ii][jj]);
+        }
+        printf("\n");
+    }
+    printf("Local Diagonal:\n");
+    for (int ii=0; ii<Ny_sub; ii++) {
+        printf("%3d ", sub_diag[ii]);
+    }
+    printf("\n");
+    MPI_Barrier(MPI_COMM_WORLD);
+    
     
     
     // Multiplica cada elemento de cada linha pelo elemento da diagonal da linha correspondente
