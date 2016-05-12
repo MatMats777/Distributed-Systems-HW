@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 	}
 
 // Cria o comunicador cartesiano
-	reorder = 0;
+	reorder = 1;
 	dim[1] = calculaFator(procs);
 	dim[0] = procs/dim[1];
 	
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 	int starts[2]   = {Y_i,X_i};                        
 	MPI_Datatype type, subarrtype;
 	MPI_Type_create_subarray(2, sizes, subsizes, starts, MPI_ORDER_C, MPI_INT, &type);
-	MPI_Type_create_resized(type, 0, Ny_sub*sizeof(int), &subarrtype);
+	MPI_Type_create_resized(type, 0, Nx_sub*sizeof(int), &subarrtype);
 	MPI_Type_commit(&subarrtype);
 
 	int *globalptr=NULL;
@@ -137,6 +137,8 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < procs; ++i) {
 		if (myId == i){
 			printf("Rank = %d\n", myId);
+			printf("(X,Y) = (%d,%d)\n", coords[0],coords[1]);
+			printf("(Xi,Yi) = (%d,%d)\n", X_i,Y_i);
 			if (myId == 0) {
 				printf("dim[0] = %d\ndim[1] = %d\n", dim[0], dim[1]);
 				printf("Global matrix: \n");
@@ -164,9 +166,9 @@ int main(int argc, char *argv[]) {
 	MPI_Bcast(diag, N, MPI_INT, 0, MPI_COMM_WORLD);
 
 // Multiplica cada elemento de cada linha pelo elemento da diagonal da linha correspondente
-	for (i = 0; i < Nx_sub; ++i) {
-		for (j = 0; j < Ny_sub; ++j) {
-			sub_M[i][j] *= diag[i+X_i];
+	for (i = 0; i < Ny_sub; ++i) {
+		for (j = 0; j < Nx_sub; ++j) {
+			sub_M[i][j] *= diag[i+Y_i];
 		}
 	}
 
@@ -174,6 +176,8 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < procs; ++i) {
 		if (myId == i){
 			printf("Rank = %d\n", myId);
+			printf("(X,Y) = (%d,%d)\n", coords[0],coords[1]);
+			printf("(Xi,Yi) = (%d,%d)\n", X_i,Y_i);
 			if (myId == 0) {
 				printf("Global matrix: \n");
 				for (int ii=0; ii<N; ii++) {
@@ -199,8 +203,8 @@ int main(int argc, char *argv[]) {
 
 // Soma das colunas em cada processo
 	memset(soma_p, 0, sizeof(int)*N);
-	for (i = 0; i < Nx_sub; ++i) {
-		for (j = 0; j < Ny_sub; ++j) {
+	for (i = 0; i < Ny_sub; ++i) {
+		for (j = 0; j < Nx_sub; ++j) {
 			soma_p[i + X_i] += sub_M[i][j];
 		}
 	}
