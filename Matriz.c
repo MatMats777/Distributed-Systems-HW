@@ -40,7 +40,6 @@ int main(int argc, char *argv[]) {
 // Parâmtros para a topologia cartesiana
 	MPI_Comm CART_COMM;
 	int dim[2], period[2], reorder;
-	int tamDims;
 	int coords[2];
 
 // Inicia o MPI
@@ -67,11 +66,10 @@ int main(int argc, char *argv[]) {
 
 // Cria o comunicador cartesiano
 	reorder = 0;
-	tamDims = sqrt(procs);
-	for (i = 0; i < 2; ++i) {
-		period[i] = 0;
-		dim[i] = tamDims;
-	}
+	dim[0] = calculaFator(procs);
+	dim[1] = procs/dim[0];
+	
+	period[0] = period[1] = 0;
 
 	MPI_Cart_create(MPI_COMM_WORLD, 2, dim, period, reorder, &CART_COMM);
 
@@ -79,14 +77,14 @@ int main(int argc, char *argv[]) {
 	MPI_Cart_coords(CART_COMM, myId, 2, coords);
 
 // Define o tamanho das sub-matrizes
-	Nx_sub = N/tamDims;   // X
-	Ny_sub = N/tamDims;   // Y
+	Nx_sub = N/dim[1];   // X
+	Ny_sub = N/dim[0];   // Y
 
 // Define as coordenadas das bordas do bloco (sub-matriz)
-	X_i = N%tamDims * (Nx_sub + 1) + (coords[1] - N%tamDims) * Nx_sub;
+	X_i = N%dim[1] * (Nx_sub + 1) + (coords[1] - N%dim[1]) * Nx_sub;
 	X_f = X_i + Nx_sub - 1;
 
-	Y_i = N%tamDims * (Ny_sub + 1) + (coords[0] - N%tamDims) * Ny_sub;
+	Y_i = N%dim[0] * (Ny_sub + 1) + (coords[0] - N%dim[0]) * Ny_sub;
 	Y_f = Y_i + Ny_sub - 1;
 
 // Distribui os blocos da matriz
