@@ -7,6 +7,16 @@
 // Definir o tamanho da matriz aqui
 #define N 8
 
+int calculaFator(int n){
+	max_fact=1;
+	while(n/max_fact>max_fact){
+			max_fact++;
+		while(n%max_fact!=0)
+			max_fact++;
+	}
+	return max_fact;
+}
+
 int main(int argc, char *argv[]) {
     // Variáveis do MPI
     int procs;
