@@ -67,8 +67,8 @@ int main(int argc, char *argv[]) {
 
 // Cria o comunicador cartesiano
 	reorder = 1;
-	dim[1] = calculaFator(procs);
-	dim[0] = procs/dim[1];
+	dim[0] = calculaFator(procs);
+	dim[1] = procs/dim[0];
 	
 	period[0] = period[1] = 0;
 
@@ -78,14 +78,14 @@ int main(int argc, char *argv[]) {
 	MPI_Cart_coords(CART_COMM, myId, 2, coords);
 
 // Define o tamanho das sub-matrizes
-	Nx_sub = N/dim[0];   // X
-	Ny_sub = N/dim[1];   // Y
+	Nx_sub = N/dim[1];   // X
+	Ny_sub = N/dim[0];   // Y
 
 // Define as coordenadas das bordas do bloco (sub-matriz)
-	X_i = coords[0] * Nx_sub;
+	X_i = coords[1] * Nx_sub;
 	X_f = X_i + Nx_sub - 1;
 
-	Y_i = coords[1] * Ny_sub;
+	Y_i = coords[0] * Ny_sub;
 	Y_f = Y_i + Ny_sub - 1;
 
 // Distribui os blocos da matriz
@@ -119,28 +119,25 @@ int main(int argc, char *argv[]) {
 
 		int disp = 0;
 		
-		for (i=0; i<dim[1]; i++) {
-			for (j=0; j<dim[0]; j++) {
-				displs[i*dim[0]+j] = disp;
+		for (i=0; i<dim[0]; i++) {
+			for (j=0; j<dim[1]; j++) {
+				displs[i*dim[1]+j] = disp;
 				disp += 1;
 			}
-			disp += ((Ny_sub)-1)*dim[0];
+			disp += ((Ny_sub)-1)*dim[1];
 		}
 	}
 
 // Envio da matriz
 	MPI_Scatterv(globalptr, sendcounts, displs, subarrtype, &(sub_M[0][0]),
 		Nx_sub*Ny_sub, MPI_INT,
-		0, MPI_COMM_WORLD);
+		0, CART_COMM);
 
 // Imprime as submatrizes e matriz principal    
 	for (i = 0; i < procs; ++i) {
 		if (myId == i){
-			printf("Rank = %d\n", myId);
-			printf("(X,Y) = (%d,%d)\n", coords[0],coords[1]);
-			printf("(Xi,Yi) = (%d,%d)\n", X_i,Y_i);
+			printf("(coord[0],coord[1]) = (%d,%d)\n", coords[0],coords[1]);			
 			if (myId == 0) {
-				printf("dim[0] = %d\ndim[1] = %d\n", dim[0], dim[1]);
 				printf("Global matrix: \n");
 				for (int ii=0; ii<N; ii++) {
 					for (int jj=0; jj<N; jj++) {
@@ -175,18 +172,7 @@ int main(int argc, char *argv[]) {
 // Imprime as submatrizes e matriz principal novamente
 	for (i = 0; i < procs; ++i) {
 		if (myId == i){
-			printf("Rank = %d\n", myId);
-			printf("(X,Y) = (%d,%d)\n", coords[0],coords[1]);
-			printf("(Xi,Yi) = (%d,%d)\n", X_i,Y_i);
-			if (myId == 0) {
-				printf("Global matrix: \n");
-				for (int ii=0; ii<N; ii++) {
-					for (int jj=0; jj<N; jj++) {
-						printf("%3d ", M[ii][jj]);
-					}
-					printf("\n");
-				}
-			}
+			printf("(coord[0],coord[1]) = (%d,%d)\n", coords[0],coords[1]);			
 			printf("Local Matrix:\n");
 			for (int ii=0; ii<Ny_sub; ii++) {
 				for (int jj=0; jj<Nx_sub; jj++) {
@@ -205,19 +191,22 @@ int main(int argc, char *argv[]) {
 	memset(soma_p, 0, sizeof(int)*N);
 	for (i = 0; i < Ny_sub; ++i) {
 		for (j = 0; j < Nx_sub; ++j) {
-			soma_p[i + X_i] += sub_M[i][j];
+			soma_p[j + X_i] += sub_M[i][j];
 		}
 	}
 	
 // Junta as somas parciais
 	soma = 0;
-	MPI_Reduce(soma_p, soma_recv, N, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(soma_p, soma_recv, N, MPI_INT, MPI_SUM, 0, CART_COMM);
 	if (myId == 0) {
+		printf("Soma de cada coluna: [ ");
 		for (i = 0; i < N; ++i) {
+			printf("%d ", soma_recv[i]);
 			soma += soma_recv[i];
 		}
 
-		printf("Resultado: %d\n", soma);
+
+		printf("]\n\n Resultado: %06d\n\n", soma);
 	}
 
 
