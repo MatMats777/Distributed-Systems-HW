@@ -8,12 +8,13 @@
 #define N 8
 
 int calculaFator(int n){
-	int max_fact=1;
-	while(n/max_fact>max_fact){
-		max_fact++;
-		while(n%max_fact!=0)
-			max_fact++;
+	int max_fact = 	1;
+
+	while (n/max_fact > max_fact) { 
+		max_fact++; 
+		while(n%max_fact!=0) max_fact++;
 	}
+
 	return max_fact;
 }
 
@@ -66,8 +67,8 @@ int main(int argc, char *argv[]) {
 
 // Cria o comunicador cartesiano
 	reorder = 0;
-	dim[0] = calculaFator(procs);
-	dim[1] = procs/dim[0];
+	dim[1] = calculaFator(procs);
+	dim[0] = procs/dim[1];
 	
 	period[0] = period[1] = 0;
 
@@ -77,14 +78,14 @@ int main(int argc, char *argv[]) {
 	MPI_Cart_coords(CART_COMM, myId, 2, coords);
 
 // Define o tamanho das sub-matrizes
-	Nx_sub = N/dim[1];   // X
-	Ny_sub = N/dim[0];   // Y
+	Nx_sub = N/dim[0];   // X
+	Ny_sub = N/dim[1];   // Y
 
 // Define as coordenadas das bordas do bloco (sub-matriz)
-	X_i = N%dim[1] * (Nx_sub + 1) + (coords[1] - N%dim[1]) * Nx_sub;
+	X_i = coords[0] * Nx_sub;
 	X_f = X_i + Nx_sub - 1;
 
-	Y_i = N%dim[0] * (Ny_sub + 1) + (coords[0] - N%dim[0]) * Ny_sub;
+	Y_i = coords[1] * Ny_sub;
 	Y_f = Y_i + Ny_sub - 1;
 
 // Distribui os blocos da matriz
@@ -102,26 +103,28 @@ int main(int argc, char *argv[]) {
 	int starts[2]   = {X_i,Y_i};                        
 	MPI_Datatype type, subarrtype;
 	MPI_Type_create_subarray(2, sizes, subsizes, starts, MPI_ORDER_C, MPI_INT, &type);
-	MPI_Type_create_resized(type, 0, Nx_sub*sizeof(int), &subarrtype);
+	MPI_Type_create_resized(type, 0, Ny_sub*sizeof(int), &subarrtype);
 	MPI_Type_commit(&subarrtype);
 
 	int *globalptr=NULL;
 	if (myId == 0)
 		globalptr = &(M[0][0]);
 
-	int sendcounts[dim[0]*dim[1]];
-	int displs[dim[0]*dim[1]];
+	int sendcounts[procs];
+	int displs[procs];
 
 	if (myId == 0) {
 		for (i=0; i<procs; i++)
 			sendcounts[i] = 1;
+
 		int disp = 0;
-		for (i=0; i<dim[0]; i++) {
-			for (j=0; j<dim[1]; j++) {
+		
+		for (i=0; i<dim[1]; i++) {
+			for (j=0; j<dim[0]; j++) {
 				displs[i*dim[0]+j] = disp;
 				disp += 1;
 			}
-			disp += ((Nx_sub)-1)*dim[0];
+			disp += ((Ny_sub)-1)*dim[0];
 		}
 	}
 
@@ -135,6 +138,7 @@ int main(int argc, char *argv[]) {
 		if (myId == i){
 			printf("Rank = %d\n", myId);
 			if (myId == 0) {
+				printf("dim[0] = %d\ndim[1] = %d\n", dim[0], dim[1]);
 				printf("Global matrix: \n");
 				for (int ii=0; ii<N; ii++) {
 					for (int jj=0; jj<N; jj++) {
