@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     int *sub_diag;
     int soma_p[N], soma_recv[N], soma;
     
-    int i, j, aux;
+    int i, j;
     
     MPI_Status status;
     
@@ -136,8 +136,8 @@ int main(int argc, char *argv[]) {
                  0, MPI_COMM_WORLD);
     /*********************/
     
-    // Envia a parcela da diagonal
-    if ((sub_diag = malloc(Ny_sub * sizeof(int))) == NULL) { exit(1); }
+    // Imprime as submatrizes e matriz principal
+    if ((sub_diag = malloc(N * sizeof(int))) == NULL) { exit(1); }
     
 
     printf("Rank = %d\n", myId);
@@ -157,21 +157,17 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
     }
-    printf("Local Diagonal:\n");
-    for (int ii=0; ii<Ny_sub; ii++) {
-        printf("%3d ", sub_diag[ii]);
-    }
     printf("\n");
     MPI_Barrier(MPI_COMM_WORLD);
     
-    
+    //Passa a diagonal
+    MPI_Bcast(diag, N, MPI_INT, 0, MPI_COMM_WORLD);
     
     // Multiplica cada elemento de cada linha pelo elemento da diagonal da linha correspondente
-    /*    for (j = 0; j < Ny_sub; ++j) {
-     sub_diag[j];
-     for (i = 0; i < Nx_sub; ++i) {
-        sub_M[i][j] *= aux;
-     }
+    for (j = 0; j < Ny_sub; ++j) {
+    	for (i = 0; i < Nx_sub; ++i) {
+        	sub_M[i][j] *= diag[j];
+     	}
      }
      
      // Soma das colunas em cada processo
@@ -190,7 +186,7 @@ int main(int argc, char *argv[]) {
      }
      
      printf("Resultado: %d\n", soma);
-     }*/
+     }
     
     
     MPI_Finalize();
